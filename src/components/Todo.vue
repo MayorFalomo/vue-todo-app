@@ -20,13 +20,13 @@
       <input
         type="text"
         v-if="editInput"
-        v-model="editedTodo"
+        v-model="localAnswer"
         placeholder="edit your todo"
         class="editInputStyle"
       />
       <button
         v-if="editInput"
-        :disabled="editedTodo.length < 1 ? true : false"
+        :disabled="localAnswer.length < 1 ? true : false"
         @click="editMyTodo"
         class="editTodoBtn"
       >
@@ -79,15 +79,15 @@ export default {
   },
   //To emit and to use a props we have to pass them as an argument like this.
   setup(props, { emit }) {
+    const localAnswer = ref("");
     const deleteTodo = () => {
       emit("handleDelete", props.todo.id);
     };
     const editedTodo = ref(props.modelValue);
 
-    //Function to emit my id and the edit values.
+    //Function to emit my id and the edit values, we define a local edit input and emit the function to the parent component
     const editMyTodo = () => {
-      // console.log(props.modelValue, "props.value");
-      emit("editTodo", props.todo.id, props.value, props?.editInput);
+      emit("editTodo", props.todo.id, localAnswer.value);
     };
 
     const setARemainder = () => {
@@ -103,6 +103,7 @@ export default {
       setARemainder,
       strikeTodo,
       editedTodo,
+      localAnswer,
     };
   },
 };

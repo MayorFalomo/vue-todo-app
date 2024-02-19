@@ -22,22 +22,26 @@ export default {
     const editInput = ref(false);
     const getClicked = ref("All");
 
+    //Function to add a todo
     const addTodo = () => {
+      // Define the todo object first
       const newTodo = {
         id: Date.now(),
         todo: todo.value,
         date: new Date(),
         completed: completed.value,
       };
-      //spread over todosArray
+      //spread over todosArray and add the todoObject to the todoArray
       const newTodosArray = [newTodo, ...todosArray.value];
       todosArray.value = newTodosArray;
+      //Then i save the todos to localStorage and empty the text area by setting it to an empty string
       localStorage.setItem("todos", JSON.stringify(todosArray.value));
       todo.value = "";
     };
 
     //Function to delete a todo
     const deleteTodo = (id) => {
+      //After you filter set the todosArray to the new filtered array and then simply the localStorage to be the current todosArray
       const newTodosArray = todosArray.value.filter((todo) => todo.id !== id);
       todosArray.value = newTodosArray;
       localStorage.setItem("todos", JSON.stringify(todosArray.value));
@@ -48,6 +52,8 @@ export default {
 
     //Function to edit a todo
     const editTodo = (id, editedTodo) => {
+      //First we open the input by changing a boolean then we ma over the todosArray and check if the id parameter we selected is the
+      //same as the id of the todo we are currently on. If it is we change the todo property to the editedTodo parameter
       editInput.value = true;
       const newTodosArray = todosArray.value.map((todo) => {
         if (todo.id == id) {
@@ -55,16 +61,20 @@ export default {
             todo: editedTodo,
           };
           editInput.value = false;
-          toast.success("todo updated !", {
+          toast.success("Your Todo has been Edited!", {
             autoClose: 3000,
           });
+          //We merge the mapped over todo to the editedObject and return the new todo
           return { ...todo, ...editedObject };
         }
         return todo;
       });
       todosArray.value = newTodosArray;
+      console.log(newTodosArray);
+      localStorage.setItem("todos", JSON.stringify(newTodosArray));
     };
 
+    //Function to set a remainder for 1 min
     const setRemainder = (id, complete) => {
       setTimeout(() => {
         const newTodosArray = todosArray.value.map((todo) => {
@@ -92,6 +102,7 @@ export default {
         return todo;
       });
       todosArray.value = newTodosArray;
+      localStorage.setItem("todos", JSON.stringify(newTodosArray));
     };
 
     const clicked = (value) => {
@@ -100,6 +111,8 @@ export default {
 
     //Using Computed property
     const compute = computed(() => {
+      //GetClicked is a string whose initial value is "All" but now the computed property would run if the getClicked value changes.
+      //Then we set the todosArray to be the vale of the filtered property and if getClicked isn't any of then we return the todosArray as is.
       if (getClicked.value == "Completed") {
         return todosArray.value.filter((todo) => todo.completed == true);
       } else if (getClicked.value == "Pending") {
@@ -138,7 +151,7 @@ export default {
 <template>
   <div class="TodoApp">
     <div class="centeredTodo">
-      <h1>Todo App</h1>
+      <h1>Todo <span> App </span></h1>
       <form class="formClass" @submit.prevent="addTodo">
         <textarea placeholder="enter your todo " v-model="todo" />
         <button
@@ -184,16 +197,19 @@ export default {
       </ul>
       <div class="todoArea">
         <div class="mappedTodo" v-for="todo in compute" :key="todo.id">
-          <Todo
-            :todo="todo"
-            :completed="completed"
-            v-model="editedTodo"
-            :editInput="editInput"
-            @handleDelete="deleteTodo"
-            @editTodo:value="editTodo"
-            @setRemainder="setRemainder"
-            @strikeTodo="strikeTodo"
-          />
+          <div v-if="compute.length > 0">
+            <Todo
+              :todo="todo"
+              :completed="completed"
+              editedTodo="editedTodo"
+              :editInput="editInput"
+              @handleDelete="deleteTodo"
+              @editTodo="editTodo"
+              @setRemainder="setRemainder"
+              @strikeTodo="strikeTodo"
+            />
+          </div>
+          <p v-else>You have not added any todos</p>
         </div>
       </div>
     </div>
@@ -218,6 +234,7 @@ export default {
 .centeredTodo h1 {
   text-align: center;
 }
+
 .todoArea {
   display: flex;
   flex-direction: column;
